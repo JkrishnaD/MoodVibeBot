@@ -3,6 +3,7 @@ const TelegramBot = require("node-telegram-bot-api");
 const { getGif } = require("./services/gifServices");
 const { getPlaylist } = require("./services/musicService");
 const { extractMood } = require("./utils/moodParser");
+const { logMood, getUserHistory } = require("./services/moodHistoryService");
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_API_KEY, {
   polling: true,
@@ -16,17 +17,31 @@ Send me your mood (like "I'm feeling happy") and I'll vibe with you.`
   );
 });
 
-bot.on("message", async (msg) => {
-  console.log(msg);
-  if (msg.text.startsWith("/")) {
-    bot.sendMessage(
-      msg.chat.id,
-      "Invalid command try to add your mood in the message"
-    );
+bot.onText(/\/history/, (msg) => {
+  const history = getUserHistory(msg.from.id, 10);
+  if (history.length === 0) {
+    bot.sendMessage(msg.chat.id, "No mood history found. Send me your mood to start your journal!");
     return;
   }
+  const historyText = history
+    .map(
+      (entry, idx) =>
+        `${idx + 1}. *${entry.mood}* at _${new Date(entry.timestamp).toLocaleString()}_`
+    )
+    .join("\n");
+  bot.sendMessage(msg.chat.id, `Your last ${history.length} moods:\n${historyText}`, {
+    parse_mode: "Markdown",
+  });
+});
+
+bot.on("message", async (msg) => {
+  // Ignore commands (they are handled separately)
+  if (msg.text.startsWith("/")) return;
+
+  console.log(msg);
 
   const mood = extractMood(msg.text);
+  logMood(msg.from.id, mood);
 
   bot.sendMessage(msg.chat.id, `Detected mood: *${mood}* 🎭`, {
     parse_mode: "Markdown",
