@@ -26,10 +26,18 @@ exports.getPlaylist = async (mood) => {
       params: {
         q: mood,
         type: "playlist",
-        limit: 1,
+        limit: 10,
       },
     });
-    return res.data.playlists.items[0]?.external_urls.spotify;
+    const items = res.data.playlists.items;
+    if (items.length === 0) return null;
+
+    // Filter out any null or incomplete items
+    const validItems = items.filter(item => item && item.external_urls && item.external_urls.spotify);
+    if (validItems.length === 0) return null;
+
+    const randomIndex = Math.floor(Math.random() * validItems.length);
+    return validItems[randomIndex].external_urls.spotify;
   } catch (err) {
     console.error("Spotify Error:", err.message);
     return null;
