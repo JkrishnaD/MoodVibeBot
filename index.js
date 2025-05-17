@@ -109,6 +109,18 @@ bot.onText(/\/chart/, async (msg) => {
   });
 });
 
+bot.onText(/\/help/, (msg) => {
+  const helpText = `🤖 *Mood Companion Bot Commands:*
+
+/start - Start the bot and get a welcome message
+/help - Show this help message
+/history - Show your last 10 moods
+/chart - Show a bar chart of your last 10 moods
+
+Just send your mood (text or emoji) and I'll respond with a GIF and a Spotify playlist!`;
+  bot.sendMessage(msg.chat.id, helpText, { parse_mode: "Markdown" });
+});
+
 bot.on("message", async (msg) => {
   // Ignore commands (they are handled separately)
   if (msg.text.startsWith("/")) return;
