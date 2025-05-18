@@ -121,6 +121,15 @@ Just send your mood (text or emoji) and I'll respond with a GIF and a Spotify pl
   bot.sendMessage(msg.chat.id, helpText, { parse_mode: "Markdown" });
 });
 
+// Mood-based activity suggestions
+const moodActivities = {
+  happy: "Share your happiness with a friend or take a walk!",
+  sad: "Try a 5-minute breathing exercise or listen to a favorite song.",
+  angry: "Take a few deep breaths or write down your feelings.",
+  chill: "Enjoy the moment! Maybe read a book or listen to calm music.",
+  motivated: "Set a small goal for today and crush it!",
+};
+
 bot.on("message", async (msg) => {
   // Ignore commands (they are handled separately)
   if (msg.text.startsWith("/")) return;
@@ -130,7 +139,12 @@ bot.on("message", async (msg) => {
   const mood = extractMood(msg.text);
   logMood(msg.from.id, mood);
 
-  bot.sendMessage(msg.chat.id, `Detected mood: *${mood}* 🎭`, {
+  let reply = `Detected mood: *${mood}* 🎭`;
+  if (moodActivities[mood]) {
+    reply += `\n\n💡 *Suggestion:* ${moodActivities[mood]}`;
+  }
+
+  bot.sendMessage(msg.chat.id, reply, {
     parse_mode: "Markdown",
   });
 
